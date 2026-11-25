@@ -39,7 +39,7 @@ function main() {
     const root = fs.realpathSync(path.join(__dirname, ".."));
     const config = path.join(os.homedir(), ".config", "Hammerspoon2");
     const target = path.join(config, "init.js");
-    for (const file of ["init.js", "modules/hot-reload.js", "modules/screenshots.js", "modules/keyboard.js", "modules/fn-gesture.js"]) {
+    for (const file of ["init.js", "modules/hot-reload.js", "modules/screenshots.js"]) {
         if (!fs.statSync(path.join(root, file)).isFile()) throw new Error("Missing runtime file: " + file);
     }
     const lockPath = execFileSync("git", ["rev-parse", "--git-path", "index.lock"], {cwd:root, encoding:"utf8"}).trim();

@@ -3,12 +3,12 @@
 Modular JavaScript macOS automation.
 
 - Screenshot Clipboard: preserves native screenshot shortcuts, saves to ~/Screenshots and copies images to the clipboard.
-- Fast Fn: a clean Fn tap toggles two keyboard layouts; Fn chords pass through. No automatic text correction or keystroke history.
+- Hot reload: optional live checkout integration.
 
 ## Install
 
 Install Hammerspoon 2: `brew install --cask hammerspoon/tap/hammerspoon2`.
-Run `./install.sh` and choose Reload Config in Hammerspoon. Grant Accessibility and, if requested, Input Monitoring. In macOS Keyboard settings set "Press Globe key to" to "Do Nothing". Leave the Globe modifier mapping unchanged. Keep the standard input-source shortcut available as a fallback.
+Run `./install.sh` and choose Reload Config in Hammerspoon. Grant any permissions requested by Hammerspoon. Keyboard input source settings are left untouched.
 
 ## Live checkout / hot reload (recommended for development)
 
@@ -16,12 +16,9 @@ From a normal local Git checkout, run `node scripts/link.js` once and choose Rel
 
 Do not run the copy installer while linked. The link installer needs Node.js and Git only at setup time.
 
-## Verify and disable
+## Verify
 
-Run `node tests/fast-fn.test.js && node tests/hot-reload.test.js` (synthetic checks; Node is only needed for testing).
-On the Mac, check the console for [Fast Fn] READY. In a text editor tap Fn and immediately type; verify both directions. Test Fn+Delete, arrows and F-keys, and screenshot paste. The logged API/readback time is not end-to-end typing latency. Some macOS/keyboard combinations suppress Globe events; if Fn does not switch, disable Fast Fn and restore the system Globe action.
-
-Disable: `touch ~/.config/Hammerspoon2/fast-fn.disabled` and Reload Config. Re-enable: `rm -f ~/.config/Hammerspoon2/fast-fn.disabled` and Reload Config. Restore the original Globe press action in Keyboard settings if disabling. The installer prints a backup directory containing prior files.
+Run `node tests/hot-reload.test.js` (synthetic checks; Node is only needed for testing). Reload Config and verify screenshot paste. For live checkout, touch `modules/screenshots.js` and confirm the hot reload log. The installer prints a backup directory containing prior files.
 
 ## Module development
 

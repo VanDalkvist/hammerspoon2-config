@@ -1,0 +1,3 @@
+# Cycle 3 — Retire experimental keyboard handler
+
+The owner confirmed satisfactory native keyboard switching with Hammerspoon stopped. Retire the experimental Fast Fn module, its tests and active entrypoint; preserve screenshot and live checkout modules. Historical commits and verification notes remain intact. No system keyboard defaults are written. Existing live bootstrap automatically uses the revised entrypoint after reload. Copy-mode installer removes its exact legacy keyboard import; local unused copies may remain. Actual native switch latency and hot reload still require device verification. No main merge in this change.

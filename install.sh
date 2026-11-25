@@ -17,7 +17,7 @@ fi
 mkdir -p "$BACKUP/modules"
 
 # Explicit public runtime files; keep local overrides outside this list.
-for name in screenshots.js fn-gesture.js keyboard.js; do
+for name in screenshots.js; do
   test -f "$ROOT/modules/$name"
   if [ -f "$CONFIG/modules/$name" ]; then
     cp "$CONFIG/modules/$name" "$BACKUP/modules/"
@@ -26,6 +26,11 @@ for name in screenshots.js fn-gesture.js keyboard.js; do
 done
 
 touch "$CONFIG/init.js"
+# Remove the exact legacy Fast Fn entrypoint from copy-mode installations.
+TMP="$BACKUP/init.next.js"
+awk '$0 != "require(\"./modules/keyboard.js\");"' "$CONFIG/init.js" > "$TMP"
+cat "$TMP" > "$CONFIG/init.js"
+rm -f "$TMP"
 # Source-of-truth entrypoints in the repository; preserve other local code.
 while IFS= read -r line; do
   [ -n "$line" ] || continue
@@ -41,5 +46,3 @@ defaults write com.apple.screencapture show-thumbnail -bool false
 open -a "Hammerspoon 2"
 echo "Configuration installed. Backup: $BACKUP"
 echo "Reload Config from the Hammerspoon menu."
-echo "Keyboard > Press Globe key to > Do Nothing (leave Modifier Keys unchanged)."
-echo "To disable Fast Fn: touch \"$CONFIG/fast-fn.disabled\" and Reload Config."
