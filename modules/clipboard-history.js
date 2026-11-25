@@ -3,6 +3,7 @@ const {shouldSkip,imageTypes,imageCost,rememberEntry}=require("./desktop-logic.j
 module.exports=function startClipboard(hs){
     const pb=hs.pasteboard;
     let history=[], paused=false, count=pb.changeCount, nextId=0, warned=false;
+    let target=null, generation=0;
     const chooser=hs.chooser.create();
     chooser.placeholder="Clipboard history";
     chooser.visibleRows=10;
@@ -51,6 +52,9 @@ module.exports=function startClipboard(hs){
     const hotkey=hs.hotkey.bind(["alt"],18,()=>{
         console.log("[Clipboard] HOTKEY FIRED");
         try{
+            if(chooser.isVisible)return;
+            generation++;
+            target=hs.application.frontmost();
             sample();
             chooser.setChoices([
                 ...history.map(row),
@@ -64,6 +68,9 @@ module.exports=function startClipboard(hs){
     },null,null);
     if(!hotkey)throw Error("Clipboard shortcut unavailable");
     chooser.onSelect=choice=>{
+        const app=target;
+        target=null;
+        const token=++generation;
         try{
             chooser.setChoices([]);
             if(!choice)return;
@@ -75,7 +82,24 @@ module.exports=function startClipboard(hs){
             if(ok){
                 count=pb.changeCount;
                 history=rememberEntry(history,entry);
-                hs.notify.show("Clipboard","Copied — paste with Cmd+V");
+                const expectedCount=count;
+                // The chooser hides before onSelect; wait for native focus restoration.
+                const fallback=()=>hs.notify.show("Clipboard","Copied — paste with Cmd+V");
+                const paste=attempt=>{
+                    if(token!==generation||pb.changeCount!==expectedCount)return;
+                    try{
+                        if(!app||!app.pid||hs.eventtap.isSecureInputEnabled()){fallback();return;}
+                        if(chooser.isVisible||hs.application.frontmost()?.pid!==app.pid){
+                            if(attempt<4)hs.timer.doAfter(0.1,()=>paste(attempt+1));
+                            else fallback();
+                            return;
+                        }
+                        // Physical ANSI V (9), independent of the current input source.
+                        hs.eventtap.keyStroke(["cmd"],9,app);
+                        console.log("[Clipboard] Paste shortcut sent");
+                    }catch(_){fallback();}
+                };
+                hs.timer.doAfter(0.12,()=>paste(0));
             }else hs.notify.show("Clipboard","Unable to restore entry");
         }catch(_){console.warn("[Clipboard] Restore failed");}
     };

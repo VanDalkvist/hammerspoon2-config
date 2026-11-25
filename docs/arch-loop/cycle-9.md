@@ -1,0 +1,3 @@
+# Cycle 9 — Clipboard auto-paste
+
+Enter restores the original text/image then sends Cmd+physical V to the app captured before opening the chooser. Verified upstream chooser hides before selection callback and eventtap supports app-targeted keyStroke. Wait 120 ms and retry focus check up to four times; no paste if focus does not return, secure input, superseded selection or clipboard changed. No content logged. Clear/pause/Escape do not paste. 5 synthetic test groups passed in JS isolate, including text/image paste, wrong app, changed clipboard and secure input. Actual app insertion depends on Accessibility permission and target app; Mac validation pending. Other modules untouched.
