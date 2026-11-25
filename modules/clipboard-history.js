@@ -22,7 +22,7 @@ module.exports=function startClipboard(hs){
             history=remember(history,text);
         }catch(_){if(!warned){warned=true;console.warn("[Clipboard] Read unavailable; check permissions");}}
     }
-    const hotkey=hs.hotkey.bind(["cmd","alt"],"1",()=>{
+    const hotkey=hs.hotkey.bind(["alt"],"1",()=>{
         sample();
         const snapshot=history.slice();
         // Keep choice indices stable while the picker is open.
@@ -46,5 +46,5 @@ module.exports=function startClipboard(hs){
         }
     };
     hs.timer.doEvery(0.5,sample);
-    console.log("[Clipboard] READY — Cmd+Option+1");
+    console.log("[Clipboard] READY — Option+1");
 };

@@ -4,9 +4,9 @@ Modular JavaScript macOS automation.
 
 - Screenshot Clipboard: preserves native screenshot shortcuts, saves to ~/Screenshots and copies images to the clipboard.
 - Hot reload: optional live checkout integration.
-- Clipboard history: Cmd+Option+1, last 50 plain-text values in memory, searchable; choose to copy and paste with Cmd+V. Clear or pause in the chooser. Sensitive types and common secret patterns are skipped on a best-effort basis; no guarantee all secrets are detected. No disk persistence or image history in this version.
+- Clipboard history: Option+1, last 50 plain-text values in memory, searchable; choose to copy and paste with Cmd+V. Clear or pause in the chooser. Sensitive types and common secret patterns are skipped on a best-effort basis; no guarantee all secrets are detected. No disk persistence or image history in this version.
 - PM2 status: menu-bar online count, per-process CPU/RAM/restarts, refreshed every 30 seconds. Read-only intent; no restart actions. Uses the existing PM2 daemon, standard executable paths and PM2_HOME (default ~/.pm2). PM2 jlist can start a daemon if it dies between the probe and the command; no intentional daemon startup. No env values are shown or logged.
-- Browser URL: Cmd+Option+2 copies the current HTTP(S) URL from Safari and common Chromium browsers via AppleScript. Grant Automation permission if prompted; browser focus is unchanged. Firefox is not supported in this version.
+- Browser URL: Option+2 copies the current HTTP(S) URL from Safari and common Chromium browsers via AppleScript. Grant Automation permission if prompted; browser focus is unchanged. Firefox is not supported in this version.
 
 ## Install
 
@@ -32,3 +32,5 @@ Run `node tests/hot-reload.test.js && node tests/desktop-logic.test.js` (synthet
 Add an explicit entry to init.js and the corresponding public runtime files to install.sh. Keep business logic testable independently, with real device smoke tests for system behavior. See AGENTS.md for privacy boundaries. Keep private settings outside Git, use macOS Keychain for future credentials, and inspect the staged diff. Enable the included opt-in secret guard: `brew install gitleaks`, then `git config --get core.hooksPath` to inspect existing hook configuration. If no custom hooks are configured and no existing pre-commit hook is installed, run `git config --local core.hooksPath .githooks` from the main checkout. The hook blocks known private paths and runs Gitleaks on staged changes; missing Gitleaks blocks commits. Existing hooks should be integrated manually. This local guard is bypassable and does not cover API-created commits; review public diffs as well.
 
 Hammerspoon 2 API: https://www.hammerspoon.org/2/
+
+Global Option+1/2 shortcuts reserve the corresponding special-character input combinations while enabled. Disable the modules if those keys are needed for typing.

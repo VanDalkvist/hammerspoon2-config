@@ -2,7 +2,7 @@ const {browserScript,validURL}=require("./desktop-logic.js");
 
 module.exports=function startBrowserURL(hs){
     let busy=false;
-    const key=hs.hotkey.bind(["cmd","alt"],"2",()=>{
+    const key=hs.hotkey.bind(["alt"],"2",()=>{
         if(busy)return;
         const script=browserScript(hs.application.frontmost()?.bundleID);
         if(!script){hs.notify.show("Browser URL","Switch to a supported browser");return;}
@@ -16,5 +16,5 @@ module.exports=function startBrowserURL(hs){
         }catch(_){busy=false;hs.notify.show("Browser URL","Unable to read browser tab");}
     });
     if(!key)throw Error("Browser URL shortcut unavailable");
-    console.log("[Browser URL] READY — Cmd+Option+2");
+    console.log("[Browser URL] READY — Option+2");
 };
