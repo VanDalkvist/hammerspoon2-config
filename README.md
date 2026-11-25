@@ -4,6 +4,9 @@ Modular JavaScript macOS automation.
 
 - Screenshot Clipboard: preserves native screenshot shortcuts, saves to ~/Screenshots and copies images to the clipboard.
 - Hot reload: optional live checkout integration.
+- Clipboard history: Ctrl+Option+V, last 50 plain-text values in memory, searchable; choose to copy and paste with Cmd+V. Clear or pause in the chooser. Sensitive types and common secret patterns are skipped on a best-effort basis; no guarantee all secrets are detected. No disk persistence or image history in this version.
+- PM2 status: menu-bar online count, per-process CPU/RAM/restarts, refreshed every 30 seconds. Read-only intent; no restart actions. Uses the existing PM2 daemon, standard executable paths and PM2_HOME (default ~/.pm2). PM2 jlist can start a daemon if it dies between the probe and the command; no intentional daemon startup. No env values are shown or logged.
+- Browser URL: Ctrl+Option+L copies the current HTTP(S) URL from Safari and common Chromium browsers via AppleScript. Grant Automation permission if prompted; browser focus is unchanged. Firefox is not supported in this version.
 
 ## Install
 
@@ -16,9 +19,13 @@ From a normal local Git checkout, run `node scripts/link.js` once and choose Rel
 
 Do not run the copy installer while linked. The link installer needs Node.js and Git only at setup time.
 
+## Desktop utilities
+
+Disable an individual module by creating `~/.config/Hammerspoon2/clipboard-history.disabled`, `pm2-status.disabled` or `browser-url.disabled` and reloading. Re-enable by removing the respective file. History is cleared on reload. PM2 must be installed and accessible to Hammerspoon; use a standard executable path or launch Hammerspoon with an appropriate PATH/PM2_HOME.
+
 ## Verify
 
-Run `node tests/hot-reload.test.js` (synthetic checks; Node is only needed for testing). Reload Config and verify screenshot paste. For live checkout, touch `modules/screenshots.js` and confirm the hot reload log. The installer prints a backup directory containing prior files.
+Run `node tests/hot-reload.test.js && node tests/desktop-logic.test.js` (synthetic checks; Node is only needed for testing). Reload Config and verify screenshot paste. For live checkout, touch `modules/screenshots.js` and confirm the hot reload log. The installer prints a backup directory containing prior files.
 
 ## Module development
 

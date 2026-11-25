@@ -21,7 +21,7 @@ function buildConfig(original, root, indexLock) {
             continue;
         }
         if (inside) continue;
-        if (/^\s*require\((["'])\.\/modules\/(?:screenshots|keyboard)\.js\1\)\s*;?\s*$/.test(line)) continue;
+        if (/^\s*require\((["'])\.\/modules\/(?:screenshots|keyboard|desktop-utilities)\.js\1\)\s*;?\s*$/.test(line)) continue;
         retained.push(line);
     }
     if (inside) throw new Error("Unclosed managed config block");
@@ -39,7 +39,7 @@ function main() {
     const root = fs.realpathSync(path.join(__dirname, ".."));
     const config = path.join(os.homedir(), ".config", "Hammerspoon2");
     const target = path.join(config, "init.js");
-    for (const file of ["init.js", "modules/hot-reload.js", "modules/screenshots.js"]) {
+    for (const file of ["init.js", "modules/hot-reload.js", "modules/screenshots.js", "modules/desktop-utilities.js", "modules/desktop-logic.js", "modules/clipboard-history.js", "modules/pm2-status.js", "modules/browser-url.js"]) {
         if (!fs.statSync(path.join(root, file)).isFile()) throw new Error("Missing runtime file: " + file);
     }
     const lockPath = execFileSync("git", ["rev-parse", "--git-path", "index.lock"], {cwd:root, encoding:"utf8"}).trim();

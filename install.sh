@@ -17,7 +17,7 @@ fi
 mkdir -p "$BACKUP/modules"
 
 # Explicit public runtime files; keep local overrides outside this list.
-for name in screenshots.js; do
+for name in screenshots.js desktop-utilities.js desktop-logic.js clipboard-history.js pm2-status.js browser-url.js; do
   test -f "$ROOT/modules/$name"
   if [ -f "$CONFIG/modules/$name" ]; then
     cp "$CONFIG/modules/$name" "$BACKUP/modules/"
