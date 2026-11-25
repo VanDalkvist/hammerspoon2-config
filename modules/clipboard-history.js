@@ -68,6 +68,7 @@ module.exports=function startClipboard(hs){
     },null,null);
     if(!hotkey)throw Error("Clipboard shortcut unavailable");
     chooser.onSelect=choice=>{
+        console.log("[Clipboard] Selection callback: "+(choice?"selected":"dismissed"));
         const app=target;
         target=null;
         const token=++generation;
@@ -76,32 +77,35 @@ module.exports=function startClipboard(hs){
             if(!choice)return;
             if(choice.action==="clear"){history=[];return;}
             if(choice.action==="pause"){paused=!paused;if(paused)history=[];count=pb.changeCount;return;}
-            const entry=history.find(x=>x.id===choice.id);
-            if(!entry){hs.notify.show("Clipboard","Entry expired");return;}
+            const entry=history.find(x=>String(x.id)===String(choice.id));
+            if(!entry){console.warn("[Clipboard] Selection ID missing or expired");hs.notify.show("Clipboard","Entry expired");return;}
             const ok=entry.kind==="image"?pb.writeImage(entry.image):pb.writeString(entry.value);
             if(ok){
                 count=pb.changeCount;
                 history=rememberEntry(history,entry);
+                console.log("[Clipboard] Restored "+entry.kind);
                 const expectedCount=count;
                 // The chooser hides before onSelect; wait for native focus restoration.
-                const fallback=()=>hs.notify.show("Clipboard","Copied — paste with Cmd+V");
+                const fallback=reason=>{console.warn("[Clipboard] Paste skipped: "+reason);hs.notify.show("Clipboard","Copied — paste with Cmd+V");};
                 const paste=attempt=>{
-                    if(token!==generation||pb.changeCount!==expectedCount)return;
+                    if(token!==generation){console.log("[Clipboard] Paste cancelled: newer selection");return;}
+                    if(pb.changeCount!==expectedCount){console.warn("[Clipboard] Paste cancelled: clipboard changed");return;}
                     try{
-                        if(!app||!app.pid||hs.eventtap.isSecureInputEnabled()){fallback();return;}
+                        if(!app||!app.pid){fallback("no original app");return;}
+                        if(hs.eventtap.isSecureInputEnabled()){fallback("secure input");return;}
                         if(chooser.isVisible||hs.application.frontmost()?.pid!==app.pid){
                             if(attempt<4)hs.timer.doAfter(0.1,()=>paste(attempt+1));
-                            else fallback();
+                            else fallback("focus not restored");
                             return;
                         }
                         // Physical ANSI V (9), independent of the current input source.
-                        hs.eventtap.keyStroke(["cmd"],9,app);
+                        hs.eventtap.keyStroke(["cmd"],9,null);
                         console.log("[Clipboard] Paste shortcut sent");
-                    }catch(_){fallback();}
+                    }catch(_){fallback("key event failed");}
                 };
                 hs.timer.doAfter(0.12,()=>paste(0));
-            }else hs.notify.show("Clipboard","Unable to restore entry");
-        }catch(_){console.warn("[Clipboard] Restore failed");}
+            }else {console.warn("[Clipboard] Pasteboard write failed");hs.notify.show("Clipboard","Unable to restore entry");}
+        }catch(_){console.warn("[Clipboard] Selection handler failed");}
     };
     hs.timer.doEvery(0.5,sample);
     console.log("[Clipboard] READY — Option+1 (text + images)");

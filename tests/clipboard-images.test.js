@@ -13,11 +13,11 @@ function verifyImage(ok,imageTypes,imageCost,rememberEntry,startClipboard){
         const img={size:{w:100,h:100},duplicate(){return {size:{w:100,h:100}};}};
         const pb={get changeCount(){return seq;},types:()=>types,readString:()=>value,readImage(){reads++;return img;},writeString(v){restored=v;seq++;return true;},writeImage(v){restored=v;seq++;return true;}};
         const chooser={setChoices(v){rows=v;},show(){}};
-        const hs={pasteboard:pb,chooser:{create:()=>chooser},application:{frontmost:()=>front},eventtap:{isSecureInputEnabled:()=>secure,keyStroke(mods,key,app){ok(mods[0]==="cmd"&&key===9&&app.pid===42);pastes++;}},hotkey:{bind(m,k,f){ok(k===18);press=f;return {};}},timer:{doEvery(_,f){tick=f;},doAfter(_,f){pending.push(f);}},notify:{show(_,s){notice=s;}}};
+        const hs={pasteboard:pb,chooser:{create:()=>chooser},application:{frontmost:()=>front},eventtap:{isSecureInputEnabled:()=>secure,keyStroke(mods,key,app){ok(mods[0]==="cmd"&&key===9&&app===null);pastes++;}},hotkey:{bind(m,k,f){ok(k===18);press=f;return {};}},timer:{doEvery(_,f){tick=f;},doAfter(_,f){pending.push(f);}},notify:{show(_,s){notice=s;}}};
         startClipboard(hs);
         value="hello";types=["public.utf8-plain-text"];seq++;tick();
         value=null;types=["public.png"];seq++;tick();
-        press();ok(rows[0].text.startsWith("Image"));ok(rows[1].text==="hello");ok(rows[0].image.size.w===96);const selected=rows[0];chooser.onSelect(selected);ok(restored===img&&pastes===0);pending.shift()();ok(pastes===1);tick();press();ok(rows.filter(x=>x.text.startsWith("Image")).length===1);
+        press();ok(rows[0].text.startsWith("Image"));ok(rows[1].text==="hello");ok(rows[0].image.size.w===96);const selected=rows[0];chooser.onSelect({...selected,id:String(selected.id)});ok(restored===img&&pastes===0);pending.shift()();ok(pastes===1);tick();press();ok(rows.filter(x=>x.text.startsWith("Image")).length===1);
         types=["public.png","org.nspasteboard.ConcealedType"];seq++;tick();ok(reads===1);
         const textRow=rows.find(x=>x.text==="hello");chooser.onSelect(textRow);ok(restored==="hello");pending.shift()();ok(pastes===2);
         press();chooser.onSelect(rows.find(x=>x.text==="hello"));front={bundleID:"other",pid:99};while(pending.length)pending.shift()();ok(pastes===2&&notice.includes("Copied"));
