@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 CONFIG="$HOME/.config/Hammerspoon2"
 
+if [ -f "$CONFIG/init.js" ] && grep -Fq "// BEGIN managed Hammerspoon checkout" "$CONFIG/init.js"; then
+  echo "Live checkout is linked; use git pull or restore the local init.js backup." >&2
+  exit 1
+fi
+
 mkdir -p "$CONFIG/modules" "$HOME/Screenshots"
 BACKUP="$(mktemp -d "$CONFIG/backup.XXXXXX")"
 if [ -f "$CONFIG/init.js" ]; then
