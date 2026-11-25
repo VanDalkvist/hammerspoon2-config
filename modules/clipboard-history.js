@@ -22,7 +22,9 @@ module.exports=function startClipboard(hs){
             history=remember(history,text);
         }catch(_){if(!warned){warned=true;console.warn("[Clipboard] Read unavailable; check permissions");}}
     }
-    const hotkey=hs.hotkey.bind(["alt"],"1",()=>{
+    const hotkey=hs.hotkey.bind(["alt"],18,()=>{
+        console.log("[Clipboard] HOTKEY FIRED");
+        try {
         sample();
         const snapshot=history.slice();
         // Keep choice indices stable while the picker is open.
@@ -33,7 +35,9 @@ module.exports=function startClipboard(hs){
         ]);
         chooser.query="";
         chooser.show();
-    });
+        console.log("[Clipboard] Chooser opened");
+        } catch(error){console.error("[Clipboard] Open FAILED: "+String(error));}
+    },null,null);
     if(!hotkey)throw Error("Clipboard shortcut unavailable");
     // Selection carries its own snapshot text; the clipboard may change while the picker is open.
     chooser.onSelect=choice=>{
