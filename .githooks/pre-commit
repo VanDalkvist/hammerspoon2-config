@@ -1,0 +1,14 @@
+#!/bin/bash
+set -euo pipefail
+while IFS= read -r -d '' path; do
+  case "/$path" in
+    */.env|*/.env.*|*.local.js|*.local.json|*.pem|*.key|*.bak|*.backup|*.log|*/private/*|*/backup.*/*|*.disabled)
+      echo 'Commit blocked: staged private/local configuration path.' >&2
+      exit 1 ;;
+  esac
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+if ! command -v gitleaks >/dev/null 2>&1; then
+  echo 'Commit blocked: install Gitleaks (brew install gitleaks).' >&2
+  exit 1
+fi
+exec gitleaks git --pre-commit --staged --redact

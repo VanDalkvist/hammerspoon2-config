@@ -19,6 +19,6 @@ Disable: `touch ~/.config/Hammerspoon2/fast-fn.disabled` and Reload Config. Re-e
 
 ## Module development
 
-Add an explicit entry to init.js and the corresponding public runtime files to install.sh. Keep business logic testable independently, with real device smoke tests for system behavior. See AGENTS.md for privacy boundaries. Keep private settings outside Git, use macOS Keychain for future credentials, and inspect the staged diff. Optional local secret guard: install Gitleaks via Homebrew, then run `gitleaks git --pre-commit --staged --redact` before committing.
+Add an explicit entry to init.js and the corresponding public runtime files to install.sh. Keep business logic testable independently, with real device smoke tests for system behavior. See AGENTS.md for privacy boundaries. Keep private settings outside Git, use macOS Keychain for future credentials, and inspect the staged diff. Enable the included opt-in secret guard: `brew install gitleaks`, then `git config --get core.hooksPath` to inspect existing hook configuration. If no custom hooks are configured and no existing pre-commit hook is installed, run `git config --local core.hooksPath .githooks` from the main checkout. The hook blocks known private paths and runs Gitleaks on staged changes; missing Gitleaks blocks commits. Existing hooks should be integrated manually. This local guard is bypassable and does not cover API-created commits; review public diffs as well.
 
 Hammerspoon 2 API: https://www.hammerspoon.org/2/
