@@ -6,3 +6,10 @@ bundle.js
 *.bak
 *.backup
 *.log
+*.local.js
+*.local.json
+*.disabled
+backup.*/
+private/
+*.pem
+*.key

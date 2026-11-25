@@ -5,40 +5,36 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 CONFIG="$HOME/.config/Hammerspoon2"
 
 mkdir -p "$CONFIG/modules" "$HOME/Screenshots"
-
-# Backup existing configuration
 BACKUP="$(mktemp -d "$CONFIG/backup.XXXXXX")"
-
 if [ -f "$CONFIG/init.js" ]; then
   cp "$CONFIG/init.js" "$BACKUP/"
 fi
+mkdir -p "$BACKUP/modules"
 
-if [ -f "$CONFIG/modules/screenshots.js" ]; then
-  cp "$CONFIG/modules/screenshots.js" "$BACKUP/"
-fi
-
-cp "$ROOT/modules/screenshots.js" \
-   "$CONFIG/modules/screenshots.js"
+# Explicit public runtime files; keep local overrides outside this list.
+for name in screenshots.js fn-gesture.js keyboard.js; do
+  test -f "$ROOT/modules/$name"
+  if [ -f "$CONFIG/modules/$name" ]; then
+    cp "$CONFIG/modules/$name" "$BACKUP/modules/"
+  fi
+  cp "$ROOT/modules/$name" "$CONFIG/modules/$name"
+done
 
 touch "$CONFIG/init.js"
+# Source-of-truth entrypoints in the repository; preserve other local code.
+while IFS= read -r line; do
+  [ -n "$line" ] || continue
+  if ! grep -Fxq "$line" "$CONFIG/init.js"; then
+    printf '\n%s\n' "$line" >> "$CONFIG/init.js"
+  fi
+done < "$ROOT/init.js"
 
-if ! grep -Fq 'require("./modules/screenshots.js")' \
-  "$CONFIG/init.js"; then
-  printf '\nrequire("./modules/screenshots.js");\n' \
-    >> "$CONFIG/init.js"
-fi
-
-defaults write com.apple.screencapture location \
-  -string "$HOME/Screenshots"
-
-defaults write com.apple.screencapture location-screenshot \
-  -string "$HOME/Screenshots"
-
-defaults write com.apple.screencapture show-thumbnail \
-  -bool false
+defaults write com.apple.screencapture location -string "$HOME/Screenshots"
+defaults write com.apple.screencapture location-screenshot -string "$HOME/Screenshots"
+defaults write com.apple.screencapture show-thumbnail -bool false
 
 open -a "Hammerspoon 2"
-
-echo "Configuration installed."
-echo "Backup: $BACKUP"
+echo "Configuration installed. Backup: $BACKUP"
 echo "Reload Config from the Hammerspoon menu."
+echo "Keyboard > Press Globe key to > Do Nothing (leave Modifier Keys unchanged)."
+echo "To disable Fast Fn: touch \"$CONFIG/fast-fn.disabled\" and Reload Config."
