@@ -4,9 +4,9 @@ Modular JavaScript macOS automation.
 
 - Screenshot Clipboard: preserves native screenshot shortcuts, saves to ~/Screenshots and copies images to the clipboard.
 - Hot reload: optional live checkout integration.
-- Clipboard history: Ctrl+Option+V, last 50 plain-text values in memory, searchable; choose to copy and paste with Cmd+V. Clear or pause in the chooser. Sensitive types and common secret patterns are skipped on a best-effort basis; no guarantee all secrets are detected. No disk persistence or image history in this version.
+- Clipboard history: Cmd+Option+1, last 50 plain-text values in memory, searchable; choose to copy and paste with Cmd+V. Clear or pause in the chooser. Sensitive types and common secret patterns are skipped on a best-effort basis; no guarantee all secrets are detected. No disk persistence or image history in this version.
 - PM2 status: menu-bar online count, per-process CPU/RAM/restarts, refreshed every 30 seconds. Read-only intent; no restart actions. Uses the existing PM2 daemon, standard executable paths and PM2_HOME (default ~/.pm2). PM2 jlist can start a daemon if it dies between the probe and the command; no intentional daemon startup. No env values are shown or logged.
-- Browser URL: Ctrl+Option+L copies the current HTTP(S) URL from Safari and common Chromium browsers via AppleScript. Grant Automation permission if prompted; browser focus is unchanged. Firefox is not supported in this version.
+- Browser URL: Cmd+Option+2 copies the current HTTP(S) URL from Safari and common Chromium browsers via AppleScript. Grant Automation permission if prompted; browser focus is unchanged. Firefox is not supported in this version.
 
 ## Install
 
