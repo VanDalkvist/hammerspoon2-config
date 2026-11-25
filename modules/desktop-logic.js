@@ -26,4 +26,20 @@ function browserScript(id){
 
 function validURL(value){return typeof value==="string"&&/^https?:\/\/[^/\s]+[^\r\n]*$/i.test(value);}
 
-module.exports={remember,shouldSkip,summarizePM2,browserScript,validURL};
+function imageTypes(types){return !types.some(t=>/file-url/i.test(t))&&types.some(t=>/^(public\.(png|tiff|jpeg|jpeg-2000|heic|heif|gif|bmp|webp)|com\.(compuserve\.gif|microsoft\.bmp|apple\.icns)|org\.webmproject\.webp)$/i.test(t));}
+
+function imageCost(w,h){return Number.isFinite(w)&&Number.isFinite(h)&&w>0&&h>0?Math.ceil(w)*Math.ceil(h)*16:Infinity;}
+
+function rememberEntry(history,entry,limit=50,imageLimit=10,byteLimit=128*1024*1024){
+    if(!entry||!["text","image"].includes(entry.kind))return history;
+    if(entry.kind==="text"&&(typeof entry.value!=="string"||!entry.value.trim()||entry.value.length>20000))return history;
+    if(entry.kind==="image"&&(!entry.image||!Number.isFinite(entry.cost)||entry.cost<=0||entry.cost>byteLimit))return history;
+    let bytes=0,images=0;
+    return [entry,...history.filter(x=>x.id!==entry.id&&!(entry.kind==="text"&&x.kind==="text"&&x.value===entry.value))].filter(x=>{
+        if(x.kind==="text")return true;
+        if(images>=imageLimit||bytes+x.cost>byteLimit)return false;
+        images++;bytes+=x.cost;return true;
+    }).slice(0,limit);
+}
+
+module.exports={remember,shouldSkip,summarizePM2,browserScript,validURL,imageTypes,imageCost,rememberEntry};

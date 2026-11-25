@@ -1,0 +1,3 @@
+# Cycle 8 — Clipboard images
+
+Add mixed clipboard history using upstream hs.pasteboard.readImage/writeImage and HSImage duplicate/size plus chooser image field. Preserve hotkey, screenshots and other modules. Keep original images in memory, transient thumbnails, stable IDs, 50 entries, max 10 images, estimated 128 MiB total/64 MiB per image. No reading files via file URLs, no disk, no content logging. Sensitive types and known source apps skipped on best-effort basis; image secrets cannot be detected. 5 synthetic checks passed in JS isolate including mocked clipboard capture, thumbnail, restore, deduplication and clear. Actual device and independent review pending; main untouched.

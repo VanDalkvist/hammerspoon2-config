@@ -1,8 +1,8 @@
-const {remember,shouldSkip}=require("./desktop-logic.js");
+const {shouldSkip,imageTypes,imageCost,rememberEntry}=require("./desktop-logic.js");
 
 module.exports=function startClipboard(hs){
     const pb=hs.pasteboard;
-    let history=[], paused=false, count=pb.changeCount, warned=false;
+    let history=[], paused=false, count=pb.changeCount, nextId=0, warned=false;
     const chooser=hs.chooser.create();
     chooser.placeholder="Clipboard history";
     chooser.visibleRows=10;
@@ -17,38 +17,68 @@ module.exports=function startClipboard(hs){
             const types=pb.types();
             const secure=hs.eventtap.isSecureInputEnabled();
             if(shouldSkip(types,bundle,secure,null))return;
-            const text=pb.readString();
-            if(pb.changeCount!==next||shouldSkip(types,bundle,secure,text))return;
-            history=remember(history,text);
+            const value=pb.readString();
+            if(shouldSkip(types,bundle,secure,value))return;
+            let entry=null;
+            if(imageTypes(types)){
+                const image=pb.readImage();
+                if(image){
+                    const {w,h}=image.size;
+                    const cost=imageCost(w,h);
+                    if(cost<=64*1024*1024){
+                        entry={id:++nextId,kind:"image",image,w,h,cost};
+                    }else console.log("[Clipboard] Large image skipped");
+                }
+            }
+            if(!entry&&typeof value==="string")entry={id:++nextId,kind:"text",value};
+            if(pb.changeCount!==next)return;
+            history=rememberEntry(history,entry);
         }catch(_){if(!warned){warned=true;console.warn("[Clipboard] Read unavailable; check permissions");}}
+    }
+    function row(entry){
+        if(entry.kind==="text")return {id:entry.id,text:entry.value.slice(0,120).replace(/\s+/g," "),subText:entry.value.slice(0,350)};
+        const result={id:entry.id,text:"Image · "+Math.round(entry.w)+" × "+Math.round(entry.h),subText:"Image / screenshot"};
+        try{
+            const thumb=entry.image.duplicate();
+            const scale=Math.min(1,96/Math.max(entry.w,entry.h));
+            if(thumb){
+                thumb.size=new HSSize(Math.max(1,Math.round(entry.w*scale)),Math.max(1,Math.round(entry.h*scale)));
+                result.image=thumb;
+            }
+        }catch(_){/* Image can still be restored without a thumbnail. */}
+        return result;
     }
     const hotkey=hs.hotkey.bind(["alt"],18,()=>{
         console.log("[Clipboard] HOTKEY FIRED");
-        try {
-        sample();
-        const snapshot=history.slice();
-        // Keep choice indices stable while the picker is open.
-        chooser.setChoices([
-            ...snapshot.map((s,index)=>({text:s.slice(0,120).replace(/\s+/g," "),subText:s.slice(0,350),value:s,index})),
-            {text:"Clear history",action:"clear"},
-            {text:paused?"Resume history":"Pause and clear history",action:"pause"}
-        ]);
-        chooser.query="";
-        chooser.show();
-        console.log("[Clipboard] Chooser opened");
-        } catch(error){console.error("[Clipboard] Open FAILED: "+String(error));}
+        try{
+            sample();
+            chooser.setChoices([
+                ...history.map(row),
+                {text:"Clear history",action:"clear"},
+                {text:paused?"Resume history":"Pause and clear history",action:"pause"}
+            ]);
+            chooser.query="";
+            chooser.show();
+            console.log("[Clipboard] Chooser opened");
+        }catch(error){console.error("[Clipboard] Open FAILED: "+String(error));}
     },null,null);
     if(!hotkey)throw Error("Clipboard shortcut unavailable");
-    // Selection carries its own snapshot text; the clipboard may change while the picker is open.
     chooser.onSelect=choice=>{
-        if(!choice)return;
-        if(choice.action==="clear"){history=[];chooser.setChoices([]);return;}
-        if(choice.action==="pause"){paused=!paused;if(paused)history=[];chooser.setChoices([]);count=pb.changeCount;return;}
-        if(typeof choice.value==="string"&&pb.writeString(choice.value)){
-            count=pb.changeCount;history=remember(history,choice.value);
-            hs.notify.show("Clipboard","Copied — paste with Cmd+V");
-        }
+        try{
+            chooser.setChoices([]);
+            if(!choice)return;
+            if(choice.action==="clear"){history=[];return;}
+            if(choice.action==="pause"){paused=!paused;if(paused)history=[];count=pb.changeCount;return;}
+            const entry=history.find(x=>x.id===choice.id);
+            if(!entry){hs.notify.show("Clipboard","Entry expired");return;}
+            const ok=entry.kind==="image"?pb.writeImage(entry.image):pb.writeString(entry.value);
+            if(ok){
+                count=pb.changeCount;
+                history=rememberEntry(history,entry);
+                hs.notify.show("Clipboard","Copied — paste with Cmd+V");
+            }else hs.notify.show("Clipboard","Unable to restore entry");
+        }catch(_){console.warn("[Clipboard] Restore failed");}
     };
     hs.timer.doEvery(0.5,sample);
-    console.log("[Clipboard] READY — Option+1");
+    console.log("[Clipboard] READY — Option+1 (text + images)");
 };
