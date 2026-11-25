@@ -19,6 +19,7 @@ function verify(assert, isRuntimePath, startReload, buildConfig) {
     test(()=>{const f=fixture();f.lock(true);f.fire([root+"/init.js"]);for(let i=0;i<31;i++)f.tick();assert(!f.pending&&f.reloads===0);});
     test(()=>{const original='hs.notify.show("a", "b");\nrequire("./modules/screenshots.js");\nrequire(\'./modules/keyboard.js\')\nrequire("./local.js");\n';const result=buildConfig(original,root,lock);assert(result.includes('hs.notify.show'));assert(result.includes('require("./local.js")'));assert(!result.includes('require("./modules/screenshots.js")'));assert(!result.includes("./modules/keyboard.js"));assert(result.includes(JSON.stringify(root+"/init.js")));assert(result.indexOf("hot-reload.js")<result.indexOf(root+"/init.js"));assert(buildConfig(result,root,lock)===result);});
     test(()=>{let threw=false;try{buildConfig("// BEGIN managed Hammerspoon checkout\n",root,lock);}catch(_){threw=true;}assert(threw);});
+    test(()=>{const src=buildConfig("",root,lock);let loaded=false, logged=false; new Function("hs","require","console",src)({},p=>{if(p.endsWith("hot-reload.js"))throw Error("fixture failure");if(p.endsWith("/init.js"))loaded=true;},{error(){logged=true;}});assert(loaded&&logged);});
     return count;
 }
 console.log(`${verify(assert.ok, isRuntimePath, startReload, buildConfig)} hot reload checks passed`);

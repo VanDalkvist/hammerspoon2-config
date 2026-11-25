@@ -13,7 +13,7 @@ function startReload(api, root, indexLock, log = console) {
     }
     function attempt() {
         timer = null;
-        if (api.fs.attributes(indexLock)) {
+        if (typeof api.fs.exists === "function" ? api.fs.exists(indexLock) : !!api.fs.attributes(indexLock)) {
             if (++retries <= 30) schedule(1);
             else log.warn("[Hot Reload] Git is still busy; reload manually after Git completes");
             return;

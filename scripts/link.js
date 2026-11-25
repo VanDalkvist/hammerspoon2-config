@@ -27,8 +27,8 @@ function buildConfig(original, root, indexLock) {
     if (inside) throw new Error("Unclosed managed config block");
     const block = [
         start,
-        "require(" + JSON.stringify(root + "/modules/hot-reload.js") + ").startReload(hs, " +
-            JSON.stringify(root) + ", " + JSON.stringify(indexLock) + ");",
+        "try { require(" + JSON.stringify(root + "/modules/hot-reload.js") + ").startReload(hs, " +
+            JSON.stringify(root) + ", " + JSON.stringify(indexLock) + "); } catch (error) { console.error(\"[Hot Reload] FAILED: \" + String(error)); }",
         "require(" + JSON.stringify(root + "/init.js") + ");",
         end
     ].join("\n");
